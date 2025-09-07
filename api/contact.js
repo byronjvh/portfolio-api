@@ -19,27 +19,20 @@ export default async function handler(req, res) {
             return res.status(400).json({ message: "❌ Todos los campos son requeridos" });
         }
 
-        try {
-            const data = await resend.emails.send({
-                from: "Contacto Web <onboarding@resend.dev>",
-                to: "byronjvh02@gmail.com",
-                subject: `Nuevo mensaje de ${name}`,
-                html: `
-      <p><strong>Nombre:</strong> ${name}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Mensaje:</strong> ${message}</p>
-    `,
-            });
+        const { data, error } = await resend.emails.send({
+            from: "Contacto Web <onboarding@resend.dev>",
+            to: "byronjvh02@gmail.com",
+            subject: `Nuevo mensaje de ${name}`,
+            html: `
+        <p><strong>Nombre:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Mensaje:</strong> ${message}</p>
+      `,
+        });
 
-            return res.status(200).json({ message: "✅ Mensaje enviado con éxito", data });
-        } catch (err) {
-            console.error("ERROR RESEND:", err); // 🔹 esto aparece en logs de Vercel
-            return res.status(500).json({
-                message: "❌ Error al enviar el correo",
-                error: String(err),
-            });
-        }
+        if (error) return res.status(400).json({ message: "❌ Error al enviar", error });
 
+        return res.status(200).json({ message: "✅ Mensaje enviado con éxito", data });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: "❌ Error interno", error: String(err) });
