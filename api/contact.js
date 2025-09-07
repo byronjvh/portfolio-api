@@ -8,7 +8,6 @@ export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    // Preflight
     if (req.method === "OPTIONS") {
         return res.status(200).end();
     }
@@ -18,14 +17,12 @@ export default async function handler(req, res) {
     }
 
     try {
-        const body = await new Promise((resolve, reject) => {
-            let data = "";
-            req.on("data", chunk => { data += chunk; });
-            req.on("end", () => resolve(JSON.parse(data)));
-            req.on("error", err => reject(err));
-        });
+        // ✅ Parse JSON correctamente
+        const { name, email, message } = await req.json();
 
-        const { name, email, message } = body;
+        if (!name || !email || !message) {
+            return res.status(400).json({ message: "❌ Todos los campos son requeridos" });
+        }
 
         const { data, error } = await resend.emails.send({
             from: "Contacto Web byronjvh.com",
@@ -39,20 +36,11 @@ export default async function handler(req, res) {
         });
 
         if (error) {
-            return res.status(400).json({
-                message: "❌ Error al enviar",
-                error,
-            });
+            return res.status(400).json({ message: "❌ Error al enviar", error });
         }
 
-        return res.status(200).json({
-            message: "✅ Mensaje enviado con éxito",
-            data,
-        });
+        return res.status(200).json({ message: "✅ Mensaje enviado con éxito", data });
     } catch (err) {
-        return res.status(500).json({
-            message: "❌ Error interno",
-            error: String(err),
-        });
+        return res.status(500).json({ message: "❌ Error interno", error: String(err) });
     }
 }
