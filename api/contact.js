@@ -3,14 +3,12 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(req, res) {
-    // Permitir origen específico
+    // 🔹 Headers CORS
     res.setHeader("Access-Control-Allow-Origin", "https://byronjvh.com");
-    // Permitir métodos que usarás
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    // Permitir headers que enviarás
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    // Manejo de preflight (OPTIONS)
+    // 🔹 Manejar preflight request
     if (req.method === "OPTIONS") {
         return res.status(200).end();
     }
