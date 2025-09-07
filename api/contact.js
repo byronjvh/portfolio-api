@@ -3,22 +3,16 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(req, res) {
-    // Headers CORS
+    // 🔹 CORS
     res.setHeader("Access-Control-Allow-Origin", "https://byronjvh.com");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    if (req.method === "OPTIONS") {
-        return res.status(200).end();
-    }
-
-    if (req.method !== "POST") {
-        return res.status(405).json({ message: "❌ Method not allowed" });
-    }
+    if (req.method === "OPTIONS") return res.status(200).end();
+    if (req.method !== "POST") return res.status(405).json({ message: "❌ Method not allowed" });
 
     try {
-        // ✅ Parse JSON correctamente
-        const { name, email, message } = await req.json();
+        const { name, email, message } = await parseJSONBody(req);
 
         if (!name || !email || !message) {
             return res.status(400).json({ message: "❌ Todos los campos son requeridos" });
@@ -35,13 +29,27 @@ export default async function handler(req, res) {
       `,
         });
 
-        if (error) {
-            return res.status(400).json({ message: "❌ Error al enviar", error });
-        }
+        if (error) return res.status(400).json({ message: "❌ Error al enviar", error });
 
         return res.status(200).json({ message: "✅ Mensaje enviado con éxito", data });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: "❌ Error interno", error: String(err) });
     }
+}
+
+// Función helper para parsear JSON
+function parseJSONBody(req) {
+    return new Promise((resolve, reject) => {
+        let body = "";
+        req.on("data", chunk => (body += chunk));
+        req.on("end", () => {
+            try {
+                resolve(JSON.parse(body));
+            } catch (err) {
+                reject(err);
+            }
+        });
+        req.on("error", reject);
+    });
 }
