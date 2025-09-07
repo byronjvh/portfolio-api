@@ -3,23 +3,29 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function handler(req, res) {
-    // 🔹 Headers CORS
+    // Headers CORS
     res.setHeader("Access-Control-Allow-Origin", "https://byronjvh.com");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    // 🔹 Manejar preflight request
+    // Preflight
     if (req.method === "OPTIONS") {
         return res.status(200).end();
     }
-
 
     if (req.method !== "POST") {
         return res.status(405).json({ message: "❌ Method not allowed" });
     }
 
     try {
-        const { name, email, message } = req.body;
+        const body = await new Promise((resolve, reject) => {
+            let data = "";
+            req.on("data", chunk => { data += chunk; });
+            req.on("end", () => resolve(JSON.parse(data)));
+            req.on("error", err => reject(err));
+        });
+
+        const { name, email, message } = body;
 
         const { data, error } = await resend.emails.send({
             from: "Contacto Web byronjvh.com",
