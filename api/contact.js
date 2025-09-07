@@ -14,6 +14,7 @@ export default async function handler(req, res) {
     try {
         const { name, email, message } = await parseJSONBody(req);
 
+        console.log("BODY RECIBIDO:", { name, email, message });
         if (!name || !email || !message) {
             return res.status(400).json({ message: "❌ Todos los campos son requeridos" });
         }
