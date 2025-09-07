@@ -11,7 +11,7 @@ export default async function handler(req, res) {
         const { name, email, message } = req.body;
 
         const { data, error } = await resend.emails.send({
-            from: "Contacto Web <onboarding@resend.dev>", // cámbialo a tu dominio verificado
+            from: "Contacto Web byronjvh.com",
             to: "byronjvh02@gmail.com",
             subject: `Nuevo mensaje de ${name}`,
             html: `
